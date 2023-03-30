@@ -1,0 +1,38 @@
+# Define the pipeline
+# This pipeline will trigger on any push to the master branch
+# It will run on an Ubuntu-based runner
+# The stages will be "build" and "deploy"
+name: Nginx Pipeline
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the source code
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t my-nginx .
+
+      # Log in to the Docker registry
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Push the Docker image to the registry
+      - name: Push Docker image to Docker Hub
+        run: docker push my-nginx
+
+      # Deploy the Docker image to a Kubernetes cluster
+      - name: Deploy to Kubernetes
+        uses: appleboy/kubectl-action@master
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          command: apply
+          manifest: deployment.yaml
