@@ -1,0 +1,25 @@
+version: 2
+plan:
+  - build:
+      key: MYPROJECT-BUILD
+      stages:
+        - default:
+            - git-clone:
+                clone-type: "CLEAN"
+                repository: "https://github.com/Puja2022/Testgithub.git"
+                branch: "main"
+            - script:
+                description: "Build application"
+                executable: "mvn clean package"
+  - deploy:
+      key: MYPROJECT-DEPLOY
+      trigger: "MYPROJECT-BUILD"
+      stages:
+        - staging:
+            - script:
+                description: "Deploy to staging environment"
+                executable: "kubectl apply -f ./k8s/staging.yaml"
+        - production:
+            - script:
+                description: "Deploy to production environment"
+                executable: "kubectl apply -f ./k8s/production.yaml"
